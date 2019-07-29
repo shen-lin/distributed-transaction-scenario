@@ -9,18 +9,27 @@ const port = 80;
 const env = process.env['NODE_ENV'];
 const Sequelize = require('sequelize');
 
+let boaDBHost = '127.0.0.1';
+let chaseDBHost = '127.0.0.1';
+
+if (env !== 'local') {
+    boaDBHost = 'mariadb1';
+    chaseDBHost = 'mariadb2'
+}
+
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.post('/createTables', (req, res) => {
     const boaDB = new Sequelize('', 'root', 'mypass', {
-        host: '127.0.0.1',
+        host: boaDBHost,
         port: 3306,
         dialect: 'mariadb'
     });
 
     const chaseDB = new Sequelize('', 'root', 'mypass', {
-        host: '127.0.0.1',
+        host: chaseDBHost,
         port: 3307,
         dialect: 'mariadb'
     });
@@ -28,7 +37,7 @@ app.post('/createTables', (req, res) => {
     Promise.all([
         boaDB.query("CREATE DATABASE `BankAccount`;")
             .then((data) => {
-               return "OK";
+                return "OK";
             })
             .catch((err) => {
                 if (err.original.code === 'ER_DB_CREATE_EXISTS') {
@@ -52,34 +61,6 @@ app.post('/createTables', (req, res) => {
     ]).then((results) => {
         res.send(JSON.stringify(results));
     });
-
-
-
-    // const boaPromise = boaDB.query("CREATE DATABASE `BankAccount`;").then((data) => {
-    //     console.log(data);
-    //     return res.send('OK');
-    // }).catch((err) => {
-    //     console.log(err);
-    //     if (err.original.code === 'ER_DB_CREATE_EXISTS') {
-    //         return res.send('EXIST');
-    //     } else {
-    //         return res.send('ERROR');
-    //     }
-    // });
-
-    // const chasePromise = chaseDB.query("CREATE DATABASE `BankAccount`;").then((data) => {
-    //     console.log(data);
-    //     return res.send('OK');
-    // }).catch((err) => {
-    //     console.log(err);
-    //     if (err.original.code === 'ER_DB_CREATE_EXISTS') {
-    //         return res.send('EXIST');
-    //     } else {
-    //         return res.send('ERROR');
-    //     }
-    // });
-
-
 });
 
 app.post('/createUser', (req, res) => {
@@ -100,30 +81,6 @@ app.post('/createUser', (req, res) => {
         }
     });
 });
-
-// const boaDB = new Sequelize('BankAccount', 'root', 'mypass', {
-//     host: '127.0.0.1',
-//     dialect: 'mariadb'
-// });
-
-// return boaDB.query("CREATE DATABASE `BankAccount`;").then((data) => {
-//     console.log(data);
-// });
-
-// class BankAccount extends Sequelize.Model { }
-// BankAccount.init({
-//     username: Sequelize.STRING,
-//     balance: Sequelize.INTEGER
-// }, { sequelize: boaDB, modelName: 'BankAccount' });
-
-// boaDB.sync()
-//     .then(() => BankAccount.create({
-//         username: 'wanlin',
-//         balance: 100
-//     }))
-//     .then(wanlin => {
-//         console.log(wanlin.toJSON());
-//     });
 
 app.use('/', express.static('web'))
 
