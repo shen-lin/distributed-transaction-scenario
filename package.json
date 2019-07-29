@@ -1,0 +1,16 @@
+{
+	"name": "distributed-transaction-webapp",
+	"displayName": "distributed-transaction-webapp",
+	"publisher": "shen-lin",
+	"description": "",
+	"version": "0.0.1",
+	"scripts": {
+		"start": "node service.js"
+	},
+	"dependencies": {
+		"express": "4.17.1",
+		"body-parser": "1.19.0",
+		"sequelize": "5.11.0",
+		"mariadb": "2.1.0"
+	}
+}

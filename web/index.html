@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Redis Distributed Lock Sample</title>
+    <script>
+        var xhttp;
+        if (window.XMLHttpRequest) {
+            xhttp = new XMLHttpRequest();
+        } else {
+            xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+
+        function setMask(mask) {
+
+        }
+
+        function getResultMessage(bank, result) {
+            var message = '';
+            if (result === 'OK') {
+                message = 'table created';
+            } else if (result === 'EXIST') {
+                message = 'table already exists';
+            } else {
+                message = 'table creation error';
+            }
+
+            return bank + ': ' + message;
+        }
+
+        function createTables() {
+            setMask(true);
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = xhttp.responseText;
+                    var span = document.querySelector('span#createTablesFeedback');
+                    var results = JSON.parse(data);
+                    var boACreateTableMsg = getResultMessage('BoA', results[0]);
+                    var chaseCreateTableMsg = getResultMessage('Chase', results[1]);
+                    span.innerText = boACreateTableMsg + ' ' + chaseCreateTableMsg;
+                    setMask(false);
+                }
+            };
+
+            xhttp.open("POST", "/createTables", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send();
+        }
+
+        function createBoAUser() {
+            var user = document.querySelector('input#boaUser').value;
+            var balance = document.querySelector('input#boaUserBalance').value;
+            createUser(user, balance, 'boa');
+        }
+
+        function createChaseUser() {
+            var user = document.querySelector('input#chaseUser').value;
+            var balance = document.querySelector('input#chaseUserBalance').value;
+            createUser(user, balance, 'chase');
+        }
+
+        function createUser(user, balance, bank) {
+            console.log(user, balance, bank);
+            var data = {
+                user: user,
+                balance: balance,
+                bank: bank
+            };
+
+            setMask(true);
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = xhttp.responseText;
+                    if (data === 'OK') {
+                        document.querySelector('span#createTablesFeedback').innerText = 'Database created!';
+                    } else if (data === 'EXIST') {
+                        document.querySelector('span#createTablesFeedback').innerText = 'DB table exists!';
+                    }
+                    else {
+                        document.querySelector('span#createTablesFeedback').innerText = 'DB table creation Error';
+                    }
+                    setMask(false);
+                }
+            };
+
+            xhttp.open("POST", "/createUser", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(JSON.stringify(data));
+        }
+
+    </script>
+</head>
+
+<body>
+    <div style="background: #F9F9F9;">
+        <h3>Create BankAccount Table for Bank of America and Chase</h3>
+        <button id="createTables" onClick='createTables()'>Create</button>
+        <span id='createTablesFeedback'></span>
+    </div>
+
+    <div style="background: #F9F9F9;">
+        <h3>Create Bank of America user</h3>
+        User: <input id="boaUser" value='alex'></input> Initial account balance: <input id="boaUserBalance"
+            value="100"></input>
+        <button id="createBoAUser" onClick='createBoAUser()'>Create</button>
+        <span id='createBoAUserFeedback'></span>
+    </div>
+
+    <div style="background: #F9F9F9;">
+        <h3>Create Chase user</h3>
+        User: <input id="chaseUser" value='bob'></input> Initial account balance: <input id="chaseUserBalance"
+            value="100"></input>
+        <button id="createChaseUser" onClick='createChaseUser()'>Create</button>
+        <span id='createChaseUserFeedback'></span>
+    </div>
+
+</body>
+
+</html>
