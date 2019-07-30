@@ -27,13 +27,13 @@ app.use(bodyParser.json())
 app.post('/createTables', (req, res) => {
     const boaDB = new Sequelize('', 'root', 'mypass', {
         host: boaDBHost,
-        port: 3306,
+        port: boaDBPort,
         dialect: 'mariadb'
     });
 
     const chaseDB = new Sequelize('', 'root', 'mypass', {
         host: chaseDBHost,
-        port: 3307,
+        port: chaseDBPort,
         dialect: 'mariadb'
     });
 
