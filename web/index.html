@@ -19,31 +19,31 @@
         function getResultMessage(bank, result) {
             var message = '';
             if (result === 'OK') {
-                message = 'table created';
+                message = 'DB created';
             } else if (result === 'EXIST') {
-                message = 'table already exists';
+                message = 'DB already exists';
             } else {
-                message = 'table creation error';
+                message = 'DB creation error';
             }
 
             return bank + ': ' + message;
         }
 
-        function createTables() {
+        function createDB() {
             setMask(true);
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     var data = xhttp.responseText;
-                    var span = document.querySelector('span#createTablesFeedback');
+                    var span = document.querySelector('span#createDBFeedback');
                     var results = JSON.parse(data);
-                    var boACreateTableMsg = getResultMessage('BoA', results[0]);
-                    var chaseCreateTableMsg = getResultMessage('Chase', results[1]);
-                    span.innerText = boACreateTableMsg + ' ' + chaseCreateTableMsg;
+                    var boACreateDBMsg = getResultMessage('BoA', results[0]);
+                    var chaseCreateDBMsg = getResultMessage('Chase', results[1]);
+                    span.innerText = boACreateDBMsg + ' ' + chaseCreateDBMsg;
                     setMask(false);
                 }
             };
 
-            xhttp.open("POST", "/createTables", true);
+            xhttp.open("POST", "/createDB", true);
             xhttp.setRequestHeader("Content-type", "application/json");
             xhttp.send();
         }
@@ -68,17 +68,21 @@
                 bank: bank
             };
 
+            var feedbackElement;
+            if (bank === 'boa') {
+                feedbackElement = 'span#createBoAUserFeedback';
+            }
+            if (bank === 'chase') {
+                feedbackElement = 'span#createChaseUserFeedback';
+            }
+
+
             setMask(true);
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     var data = xhttp.responseText;
                     if (data === 'OK') {
-                        document.querySelector('span#createTablesFeedback').innerText = 'Database created!';
-                    } else if (data === 'EXIST') {
-                        document.querySelector('span#createTablesFeedback').innerText = 'DB table exists!';
-                    }
-                    else {
-                        document.querySelector('span#createTablesFeedback').innerText = 'DB table creation Error';
+                        document.querySelector(feedbackElement).innerText = 'OK';
                     }
                     setMask(false);
                 }
@@ -89,32 +93,68 @@
             xhttp.send(JSON.stringify(data));
         }
 
+        function transfer() {
+            var sender = document.querySelector('input#sender').value;
+            var receiver = document.querySelector('input#receiver').value;
+            var amount = document.querySelector('input#amount').value;
+            console.log(sender, receiver, amount);
+
+            var data = {
+                sender: sender,
+                receiver: receiver,
+                amount: amount
+            };
+
+            setMask(true);
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = xhttp.responseText;
+                    if (data === 'OK') {
+                        document.querySelector(feedbackElement).innerText = 'OK';
+                    }
+                    setMask(false);
+                }
+            };
+
+            xhttp.open("POST", "/transfer", true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send(JSON.stringify(data));
+        }
     </script>
 </head>
 
 <body>
     <div style="background: #F9F9F9;">
-        <h3>Create BankAccount Table for Bank of America and Chase</h3>
-        <button id="createTables" onClick='createTables()'>Create</button>
-        <span id='createTablesFeedback'></span>
+        <h3>Create BankAccount database for Bank of America and Chase</h3>
+        <button id="createDB" onClick='createDB()'>Create</button>
+        <span id='createDBFeedback'></span>
     </div>
 
     <div style="background: #F9F9F9;">
         <h3>Create Bank of America user</h3>
-        User: <input id="boaUser" value='alex'></input> Initial account balance: <input id="boaUserBalance"
-            value="100"></input>
+        User: <input id="boaUser" value='alex'></input>
+        Initial account balance: <input id="boaUserBalance" value="100"></input>
         <button id="createBoAUser" onClick='createBoAUser()'>Create</button>
         <span id='createBoAUserFeedback'></span>
     </div>
 
     <div style="background: #F9F9F9;">
         <h3>Create Chase user</h3>
-        User: <input id="chaseUser" value='bob'></input> Initial account balance: <input id="chaseUserBalance"
-            value="100"></input>
+        User: <input id="chaseUser" value='bob'></input>
+        Initial account balance: <input id="chaseUserBalance" value="100"></input>
         <button id="createChaseUser" onClick='createChaseUser()'>Create</button>
         <span id='createChaseUserFeedback'></span>
     </div>
 
+
+    <div style="background: #F9F9F9;">
+        <h3>Transfer an amount between two accounts</h3>
+        Sender: <input id="sender" value='alex'></input>
+        Receiver: <input id="receiver" value="bob"></input>
+        Amount: <input id="amount" value="15"></input>
+        <button id="transfer" onClick='transfer()'>Transfer</button>
+        <span id='transferFeedback'></span>
+    </div>
 </body>
 
 </html>

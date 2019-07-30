@@ -24,7 +24,7 @@ if (env !== 'local') {
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-app.post('/createTables', (req, res) => {
+app.post('/createDB', (req, res) => {
     const boaDB = new Sequelize('', 'root', 'mypass', {
         host: boaDBHost,
         port: boaDBPort,
@@ -66,24 +66,49 @@ app.post('/createTables', (req, res) => {
     });
 });
 
+
+class Account extends Sequelize.Model { }
+
 app.post('/createUser', (req, res) => {
-    const boaDB = new Sequelize('', 'root', 'mypass', {
-        host: '127.0.0.1',
+    const user = req.body.user;
+    const balance = req.body.balance;
+    const bank = req.body.bank;
+
+    let dbHost;
+    let dbPort;
+    if (bank === 'boa') {
+        dbHost = boaDBHost;
+        dbPort = boaDBPort;
+    }
+    if (bank === 'chase') {
+        dbHost = chaseDBHost;
+        dbPort = chaseDBPort;
+    }
+
+    const sequelize = new Sequelize('BankAccount', 'root', 'mypass', {
+        host: dbHost,
+        port: dbPort,
         dialect: 'mariadb'
     });
 
-    boaDB.query("CREATE DATABASE `BankAccount`;").then((data) => {
-        console.log(data);
-        return res.send('OK');
-    }).catch((err) => {
-        console.log(err);
-        if (err.original.code === 'ER_DB_CREATE_EXISTS') {
-            return res.send('EXIST');
-        } else {
-            return res.send('ERROR');
-        }
-    });
+    
+    Account.init({
+        username: Sequelize.STRING,
+        balance: Sequelize.INTEGER
+    }, { sequelize, modelName: 'account' });
+
+    sequelize.sync().then(() => {
+        Account.findOrCreate({ where: { username: user }, defaults: { balance: balance } })
+        .then(([account, created]) => { 
+            console.log(account.dataValues);
+            console.log(created);
+        })
+        .then(() => {
+            res.send('OK');
+        });
+    })
 });
+
 
 app.use('/', express.static('web'))
 
