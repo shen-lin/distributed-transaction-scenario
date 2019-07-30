@@ -43,7 +43,7 @@ app.post('/createTables', (req, res) => {
                 if (err.original.code === 'ER_DB_CREATE_EXISTS') {
                     return "EXIST";
                 } else {
-                    return "ERROR";
+                    return `ERROR ${err.original.code}`;
                 }
             })
         ,
@@ -55,7 +55,7 @@ app.post('/createTables', (req, res) => {
                 if (err.original.code === 'ER_DB_CREATE_EXISTS') {
                     return "EXIST";
                 } else {
-                    return "ERROR";
+                    return `ERROR ${err.original.code}`;
                 }
             })
     ]).then((results) => {
