@@ -11,10 +11,13 @@ const Sequelize = require('sequelize');
 
 let boaDBHost = '127.0.0.1';
 let chaseDBHost = '127.0.0.1';
-
+let boaDBPort = 3306;
+let chaseDBPort = 3307;
 if (env !== 'local') {
     boaDBHost = 'mariadb1';
-    chaseDBHost = 'mariadb2'
+    chaseDBHost = 'mariadb2';
+    boaDBPort = 3306;
+    chaseDBPort = 3306;
 }
 
 
